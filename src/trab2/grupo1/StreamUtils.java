@@ -3,6 +3,7 @@ package trab2.grupo1;
 import java.io.*;
 import java.util.Arrays;
 import java.util.function.*;
+import java.util.regex.Pattern;
 
 public class StreamUtils {
 
@@ -41,13 +42,40 @@ public class StreamUtils {
     }
 
     public static void copyCom( BufferedReader in, PrintWriter out ) throws IOException {
-        int index = 0, line = 1;
-        boolean blockCom = false;
+        int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2, state = LOOKING_FOR_CUE;
+
+        int index = 0, line = 1, quoteIndex = -1;
+        //boolean blockCom = false;
         String s;
         while ((s = in.readLine()) != null) {
-            if (!blockCom) blockCom = s.contains("/*");
+            if (s.contains("/*"))
+                if (state != INSIDE_STRING)
+                    state = BLOCK_COMMENT;
 
-            if ((index = s.lastIndexOf("//")) != -1) {
+            if (s.contains("\""))
+                if (state != BLOCK_COMMENT)
+                    state = INSIDE_STRING;
+
+            if (state == BLOCK_COMMENT) {
+                if (s.contains("*/")) {
+                    if (s.contains("/*") && s.lastIndexOf("/*") < s.lastIndexOf("*/"))
+                        state = LOOKING_FOR_CUE;
+                }
+            }
+            else {
+                if (state != INSIDE_STRING) {
+                    if (s.contains("/*"))
+                        state = BLOCK_COMMENT;
+                    if (s.split(Pattern.quote("\"")).length % 2 == 0) state = LOOKING_FOR_CUE;
+                }
+
+            }
+
+            if ((quoteIndex = s.indexOf("\"")) > -1) {
+                if (state < BLOCK_COMMENT) state = INSIDE_STRING;
+            }
+
+            if ((index = s.lastIndexOf("//")) != -1 && state == LOOKING_FOR_CUE) {
                 String temp = s.substring(0, index).trim();
                 int quoteCounter = 0;
                 for (int i = 0; i < temp.length(); i++)
@@ -112,10 +140,10 @@ public class StreamUtils {
     public static void copyEvaluate(BufferedReader in, Writer out) throws IOException {
         mapper(in, StreamUtils::evaluate, (s, i) -> {
             try {
-                out.write(s + (i == null ? " ERROR" : i) + "");
+                out.write(s + (i == null ? " ERROR" : i) + "\n");
             }
             catch (IOException ioe) {
-                throw new RuntimeException(ioe.getMessage());
+                throw new RuntimeException(ioe);
             }
         });
     }

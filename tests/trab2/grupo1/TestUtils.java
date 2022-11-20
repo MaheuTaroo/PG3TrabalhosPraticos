@@ -8,6 +8,36 @@ import static org.junit.jupiter.api.Assertions.*;
 import static trab2.grupo1.StreamUtils.*;
 
 public class TestUtils {
+    public final String code1 = "package test;\n\n" +
+            "// classe de teste\n" +
+            "public class Test {\n\n" +
+            "/* método\n" +
+            "* principal */\n" +
+            "\tpublic static void main(String[] args) {\n" +
+            "\t\tString text = \"this is a test string // and this is a test comment\";\n\n" +
+            "\t\t// envia o texto para o ecrã\n" +
+            "\t\tSystem.out.println(text);\n" +
+            "\t}\n" +
+            "}", code2 = "package test;\n\n" +
+            "public class TestTester {\n" +
+            "\tpublic static void main(String[] args) {}\n" +
+            "\t\tSystem.out.println(\"This is a test that tests a test class\");" +
+            "\t}" +
+            "}";
+
+    @Test
+    public void TestValidate() {
+        try {
+            assertThrows(IOException.class, () -> validate(new FileReader("A:\\testfile.txt")));
+
+            assertTrue(validate(new StringReader(code1)));
+
+            assertFalse(validate(new StringReader(code2)));
+        }
+        catch (IOException ignored) {
+
+        }
+    }
 
     @Test
     public void TestExpression() {
@@ -32,27 +62,22 @@ public class TestUtils {
 
     @Test
     public void TestCopyCom() {
-        String code = "package test;\n\n" +
-                      "// classe de teste\n" +
-                      "public class Test {\n\n" +
-                      "/* método\n" +
-                      "* principal */\n" +
-                      "    public static void main(String[] args) {\n" +
-                      "        String text = \"this is a test string // and this is a test comment\";\n\n" +
-                      "        // envia o texto para o ecrã\n" +
-                      "        System.out.println(text);\n" +
-                      "    }\n" +
-                      "}", expected = "3 // classe de teste\n11 // envia o texto para o ecrã\n";
+        String expected = "3 // classe de teste\n11 // envia o texto para o ecrã\n";
 
-        assertDoesNotThrow(() -> copyCom(new BufferedReader(new StringReader(code)), new PrintWriter(System.out)));
+        assertDoesNotThrow(() -> copyCom(new BufferedReader(new StringReader(code1)), new PrintWriter(System.out)));
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            copyCom(new BufferedReader(new StringReader(code)), new PrintWriter(baos));
+            copyCom(new BufferedReader(new StringReader(code1)), new PrintWriter(baos));
 
             assertEquals(expected, baos.toString());
 
+            baos.reset();
+
+            copyCom(new BufferedReader(new StringReader(code2)), new PrintWriter(baos));
+
+            assertEquals("", baos.toString());
         }
         catch (Exception ignored) {
 

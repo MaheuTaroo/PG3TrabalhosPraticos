@@ -1,95 +1,152 @@
 package trab2.grupo1;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.function.*;
-import java.util.regex.Pattern;
 
 public class StreamUtils {
 
     public static boolean validate( Reader in ) throws IOException {
-        int bracketCounter = 0, quoteCounter = 0, index = 0, blockCom = -1, c;
-        char[] buffer = new char[512];
-        while ((c = in.read(buffer)) != -1) {
-            if (blockCom == -1) blockCom = Arrays.toString(buffer).indexOf("/*");
+        final int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2, INSIDE_BRACKETS = 3;
+        int state = LOOKING_FOR_CUE, bracketCounter = 0, c;
+        boolean escape = false, asterisk = false, startOfComment = false, lineComment = false;
 
-            for (int i = 0; i < c; i++) {
+        while ((c = in.read()) != -1) {
+            if (lineComment) {
+                if (c == '\n') lineComment = false;
+                continue;
+            }
 
-                if (blockCom > -1) {
-                    if (!Arrays.toString(buffer).contains("*/")) break;
+            if (c == '/') {
+                if (startOfComment) {
+                    lineComment = true;
+                    startOfComment = false;
+                }
+                else startOfComment = true;
+            }
+
+            if (c == '\\')
+                escape = !escape;
+
+            switch (state) {
+                case INSIDE_STRING:
+                    if (c == '"' && !escape) state = LOOKING_FOR_CUE;
+                    else continue;
+                    break;
+
+                case BLOCK_COMMENT:
+                    if (c == '/' && asterisk) state = LOOKING_FOR_CUE;
                     else {
-                        i = Arrays.toString(buffer).indexOf("*/") + 1;
-                        blockCom = -1;
+                        if (c == '*') asterisk = true;
                         continue;
                     }
-                }
+                    break;
 
-                if (Arrays.toString(buffer).contains("//")) break;
-
-                if (buffer[i] == '"' && (i == 0 || buffer[i - 1] != '\\')) quoteCounter++;
-
-                if (quoteCounter == 0) {
-                    if (buffer[i] == '{') bracketCounter++;
-                    else if (buffer[i] == '}') {
-                        bracketCounter--;
-                        if (bracketCounter < 0)
-                            return false;
+                case INSIDE_BRACKETS:
+                    if (c == '}') {
+                        if (--bracketCounter == 0)
+                            state = LOOKING_FOR_CUE;
                     }
-                }
+                    if (c == '{') bracketCounter++;
+                    break;
+
+                case LOOKING_FOR_CUE:
+
+                    switch (c) {
+                        case '{':
+                            bracketCounter++;
+                            state = INSIDE_BRACKETS;
+                            break;
+
+                        case '}':
+                            return false;
+
+                        case '*':
+                            if (startOfComment) state = BLOCK_COMMENT;
+                            else asterisk = true;
+                            break;
+
+                        case '"':
+                            if (!escape) state = INSIDE_STRING;
+                            break;
+
+                        default:
+                            if (startOfComment) startOfComment = false;
+                            if (asterisk) asterisk = false;
+                            if (escape) escape = false;
+                    }
+
+                    break;
+
             }
         }
-        return bracketCounter == 0;
+        return state == LOOKING_FOR_CUE;
     }
 
     public static void copyCom( BufferedReader in, PrintWriter out ) throws IOException {
-        int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2, state = LOOKING_FOR_CUE;
+        final int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2;
+        int state = LOOKING_FOR_CUE, line = 1, character;
+        boolean escape = false, asterisk = false, startOfComment = false, lineComment = false;
 
-        int index = 0, line = 1, quoteIndex = -1;
-        //boolean blockCom = false;
-        String s;
-        while ((s = in.readLine()) != null) {
-            if (s.contains("/*"))
-                if (state != INSIDE_STRING)
-                    state = BLOCK_COMMENT;
-
-            if (s.contains("\""))
-                if (state != BLOCK_COMMENT)
-                    state = INSIDE_STRING;
-
-            if (state == BLOCK_COMMENT) {
-                if (s.contains("*/")) {
-                    if (s.contains("/*") && s.lastIndexOf("/*") < s.lastIndexOf("*/"))
-                        state = LOOKING_FOR_CUE;
-                }
-            }
-            else {
-                if (state != INSIDE_STRING) {
-                    if (s.contains("/*"))
-                        state = BLOCK_COMMENT;
-                    if (s.split(Pattern.quote("\"")).length % 2 == 0) state = LOOKING_FOR_CUE;
-                }
-
-            }
-
-            if ((quoteIndex = s.indexOf("\"")) > -1) {
-                if (state < BLOCK_COMMENT) state = INSIDE_STRING;
-            }
-
-            if ((index = s.lastIndexOf("//")) != -1 && state == LOOKING_FOR_CUE) {
-                String temp = s.substring(0, index).trim();
-                int quoteCounter = 0;
-                for (int i = 0; i < temp.length(); i++)
-                    if (temp.charAt(i) == '"') quoteCounter++;
-
-                if (quoteCounter % 2 == 1) {
+        while ((character = in.read()) != -1) {
+            if (lineComment) {
+                out.write(character);
+                if (character == '\n') {
+                    lineComment = false;
                     line++;
-                    continue;
                 }
-
-                out.write(line + " " + s.substring(index).trim() + "\n");
+                continue;
             }
 
-            line++;
+            if (character == '\\')
+                escape = !escape;
+
+            switch (state) {
+                case INSIDE_STRING:
+                    if (character == '"' && !escape) state = LOOKING_FOR_CUE;
+                    else continue;
+                    break;
+
+                case BLOCK_COMMENT:
+                    if (character == '/' && asterisk) state = LOOKING_FOR_CUE;
+                    else {
+                        if (character == '\n') line++;
+                        if (character == '*') asterisk = true;
+                        continue;
+                    }
+                    break;
+
+                case LOOKING_FOR_CUE:
+
+                    switch (character) {
+                        case '/':
+                            if (startOfComment) {
+                                lineComment = true;
+                                out.write(line + " //");
+                                startOfComment = false;
+                            }
+                            else startOfComment = true;
+                            break;
+
+                        case '*':
+                            if (startOfComment) state = BLOCK_COMMENT;
+                            else asterisk = true;
+                            break;
+
+                        case '"':
+                            if (!escape) state = INSIDE_STRING;
+                            break;
+
+                        default:
+                            if (startOfComment) startOfComment = false;
+                            if (asterisk) asterisk = false;
+                            if (escape) escape = false;
+                    }
+
+                    break;
+
+            }
+
+            if (character == '\n') line++;
         }
         out.flush();
     }
@@ -103,20 +160,20 @@ public class StreamUtils {
     public static Integer evaluate(String expression) {
         if (!expression.endsWith("=") || expression.length() % 2 == 1) return null;
 
-        int res = 0;
+        int res;
         try {
             String exp = expression.trim();
-            res = Integer.parseInt(exp.substring(0, 1));
-            exp = exp.substring(1);
+            res = Integer.parseInt(String.valueOf(exp.charAt(0)));
 
-            while (exp.length() > 0) {
-                if (exp.charAt(0) == '=') break;
-                switch (exp.charAt(0)) {
-                    case '+' -> res += Integer.parseInt(exp.substring(1, 2));
-                    case '-' -> res -= Integer.parseInt(exp.substring(1, 2));
+            for (int i = 1; i < exp.length(); i += 2) {
+                if (exp.charAt(i) == '=') break;
+
+                int num = Integer.parseInt(String.valueOf(exp.charAt(i + 1)));
+                switch (exp.charAt(i)) {
+                    case '+' -> res += num;
+                    case '-' -> res -= num;
                     default -> throw new Exception();
                 }
-                exp = exp.substring(2);
             }
         }
         catch (Exception e) {

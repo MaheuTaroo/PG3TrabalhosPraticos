@@ -36,7 +36,7 @@ public class StreamUtils {
                 case BLOCK_COMMENT:
                     if (c == '/' && asterisk) state = LOOKING_FOR_CUE;
                     else {
-                        if (c == '*') asterisk = true;
+                        asterisk = c == '*';
                         continue;
                     }
                     break;
@@ -70,9 +70,10 @@ public class StreamUtils {
                             break;
 
                         default:
-                            if (startOfComment) startOfComment = false;
+                            /*if (startOfComment) startOfComment = false;
                             if (asterisk) asterisk = false;
-                            if (escape) escape = false;
+                            if (escape) escape = false;*/
+                            startOfComment = asterisk = escape = false;
                     }
 
                     break;
@@ -110,7 +111,7 @@ public class StreamUtils {
                     if (character == '/' && asterisk) state = LOOKING_FOR_CUE;
                     else {
                         if (character == '\n') line++;
-                        if (character == '*') asterisk = true;
+                        asterisk = character == '*';
                         continue;
                     }
                     break;
@@ -122,9 +123,10 @@ public class StreamUtils {
                             if (startOfComment) {
                                 lineComment = true;
                                 out.write(line + " //");
-                                startOfComment = false;
+                                //startOfComment = false;
                             }
-                            else startOfComment = true;
+                            startOfComment = !startOfComment;
+                            //else startOfComment = true;
                             break;
 
                         case '*':
@@ -137,9 +139,10 @@ public class StreamUtils {
                             break;
 
                         default:
-                            if (startOfComment) startOfComment = false;
+                            /*if (startOfComment) startOfComment = false;
                             if (asterisk) asterisk = false;
-                            if (escape) escape = false;
+                            if (escape) escape = false;*/
+                            startOfComment = asterisk = escape = false;
                     }
 
                     break;

@@ -28,11 +28,23 @@ public class TestUtils {
     @Test
     public void TestValidate() {
         try {
-            assertThrows(IOException.class, () -> validate(new FileReader("A:\\testfile.txt")));
+            assertThrows(IOException.class, () -> validate(new FileReader("")));
 
             assertTrue(validate(new StringReader(code1)));
 
             assertFalse(validate(new StringReader(code2)));
+
+            String code3 = "//\t\t     \t       \" {        ";
+            assertTrue(validate(new StringReader(code3)));
+
+            code3 = "/*  {     */";
+            assertTrue(validate(new StringReader(code3)));
+
+            code3 += "asdfasdfghjkghjklço// {}}\n{}{";
+            assertFalse(validate(new StringReader(code3)));
+
+            code3 = "{}{//}\n}";
+            assertTrue(validate(new StringReader(code3)));
         }
         catch (IOException ignored) {
 

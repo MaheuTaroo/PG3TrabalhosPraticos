@@ -6,7 +6,7 @@ import java.util.function.*;
 public class StreamUtils {
 
     public static boolean validate( Reader in ) throws IOException {
-        final int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2, INSIDE_BRACKETS = 3;
+        final int LOOKING_FOR_CUE = 0, BLOCK_COMMENT = 1, INSIDE_STRING = 2;
         int state = LOOKING_FOR_CUE, bracketCounter = 0, c;
         boolean escape = false, asterisk = false, startOfComment = false, lineComment = false;
 
@@ -15,17 +15,6 @@ public class StreamUtils {
                 if (c == '\n') lineComment = false;
                 continue;
             }
-
-            if (c == '/') {
-                if (startOfComment) {
-                    lineComment = true;
-                    startOfComment = false;
-                }
-                else startOfComment = true;
-            }
-
-            if (c == '\\')
-                escape = !escape;
 
             switch (state) {
                 case INSIDE_STRING:
@@ -41,24 +30,29 @@ public class StreamUtils {
                     }
                     break;
 
-                case INSIDE_BRACKETS:
-                    if (c == '}') {
-                        if (--bracketCounter == 0)
-                            state = LOOKING_FOR_CUE;
-                    }
-                    if (c == '{') bracketCounter++;
-                    break;
-
                 case LOOKING_FOR_CUE:
-
                     switch (c) {
+                        case '/':
+                            if (startOfComment) {
+                                lineComment = true;
+                                startOfComment = false;
+                            }
+                            else startOfComment = true;
+                            break;
+
+                        case '\\':
+                           escape = !escape;
+                           if (escape) continue;
+                           break;
+
                         case '{':
                             bracketCounter++;
-                            state = INSIDE_BRACKETS;
                             break;
 
                         case '}':
-                            return false;
+                            if (--bracketCounter < 0)
+                                return false;
+                            break;
 
                         case '*':
                             if (startOfComment) state = BLOCK_COMMENT;
@@ -70,9 +64,6 @@ public class StreamUtils {
                             break;
 
                         default:
-                            /*if (startOfComment) startOfComment = false;
-                            if (asterisk) asterisk = false;
-                            if (escape) escape = false;*/
                             startOfComment = asterisk = escape = false;
                     }
 
@@ -80,7 +71,8 @@ public class StreamUtils {
 
             }
         }
-        return state == LOOKING_FOR_CUE;
+
+        return state == LOOKING_FOR_CUE && bracketCounter == 0;
     }
 
     public static void copyCom( BufferedReader in, PrintWriter out ) throws IOException {
@@ -123,10 +115,8 @@ public class StreamUtils {
                             if (startOfComment) {
                                 lineComment = true;
                                 out.write(line + " //");
-                                //startOfComment = false;
                             }
                             startOfComment = !startOfComment;
-                            //else startOfComment = true;
                             break;
 
                         case '*':
@@ -139,14 +129,9 @@ public class StreamUtils {
                             break;
 
                         default:
-                            /*if (startOfComment) startOfComment = false;
-                            if (asterisk) asterisk = false;
-                            if (escape) escape = false;*/
                             startOfComment = asterisk = escape = false;
                     }
-
                     break;
-
             }
 
             if (character == '\n') line++;

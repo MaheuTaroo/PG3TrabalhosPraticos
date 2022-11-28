@@ -38,7 +38,6 @@ public class AlgorithmUtils {
         int segs = 1;
         ArrayList<E> tmp = new ArrayList<>();
 
-
         if(seq.size() == 2) {
             if(cmp.compare(e,temp) < 0) {
                 if(segs == n) {
@@ -104,19 +103,21 @@ public class AlgorithmUtils {
         return tmp;
     }
 
-    <K,V,C extends Collection<V>> void addAll(BufferedReader in, Map<K,C> m, Function<String, V> getValue, Function<V, K> getKey, Supplier<C> supC) throws IOException {
+    public static <K,V,C extends Collection<V>> void addAll(BufferedReader in, Map<K,C> m, Function<String, V> getValue, Function<V, K> getKey, Supplier<C> supC) throws IOException {
         String s;
         while((s = in.readLine()) != null) {
             V value = getValue.apply(s);
             K key = getKey.apply(value);
-            if(!m.containsKey(key)) {
-                m.put(key, supC.get());
+            C c = m.get(key);
+            if(c == null) {
+                c = supC.get();
+                m.put(key, c);
             }
-            m.get(key).add(value);
+            c.add(value);
         }
     }
 
-    <K,V,C extends Collection<V>> void forEachIf( Map<K,C> m, Predicate<K> pred, Consumer<V> action) {
+    public static <K,V,C extends Collection<V>> void forEachIf( Map<K,C> m, Predicate<K> pred, Consumer<V> action) {
         m.forEach((key, c) -> {
             if(pred.test(key))
                 for (V v : m.get(key))
@@ -124,7 +125,7 @@ public class AlgorithmUtils {
         });
     }
 
-    <K,V,C extends Collection<V>> void forEachIf( Map<K,C> m, BiPredicate<K,C> p, BiConsumer<K,C> action) {
+    public static <K,V,C extends Collection<V>> void forEachIf( Map<K,C> m, BiPredicate<K,C> p, BiConsumer<K,C> action) {
         m.forEach((key, c) -> {
             if(p.test(key, c))
                 for(V v : m.get(key))

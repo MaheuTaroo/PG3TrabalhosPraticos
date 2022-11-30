@@ -7,7 +7,7 @@ import java.io.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static trab2.grupo1.StreamUtils.*;
 
-public class TestUtils {
+public class TestStreamUtils {
     public final String code1 = "package test;\n\n" +
             "// classe de teste\n" +
             "public class Test {\n\n" +

@@ -31,75 +31,26 @@ public class AlgorithmUtils {
 
     public static <E> List<E> getSubSequences(Collection<E> seq, int n, Comparator<E> cmp ) {
         if (n < 1) throw new IllegalArgumentException();
-        if (seq.isEmpty()) return List.of();
-        if(seq.size() == 1 && n == 1) return new ArrayList<>(seq);
-        Iterator<E> iter = seq.iterator();
-        E e = iter.next(), temp = iter.next();
-        int segs = 1;
         ArrayList<E> tmp = new ArrayList<>();
+        if (seq.isEmpty()) return tmp;
+        Iterator<E> iter = seq.iterator();
+        E e, temp = iter.next();
+        int segs = 1;
 
-        if(seq.size() == 2) {
-            if(cmp.compare(e,temp) < 0) {
-                if(segs == n) {
-                    tmp.add(e);
-                    tmp.add(temp);
-                } else {
-                    segs++;
-                    tmp.add(temp);
-                }
-            } else if(cmp.compare(e, temp) > 0) {
-                if(n == 1) {
-                    segs++;
-                    tmp.add(e);
-                }
-                else if(n == 2) {
-                    segs++;
-                    tmp.add(temp);
-                }
-            }
-        }
-
+        if (n == 1) tmp.add(temp);
         while(iter.hasNext()) {
-            if(cmp.compare(e, temp) > 0) {
-                if(segs == n) {
-                    tmp.add(e);
-                    break;
-                }
-                tmp = new ArrayList<>();
+            e = iter.next();
+
+            if (cmp.compare(e, temp) < 0) {
                 segs++;
-                e = temp;
-                temp = iter.next();
-                if(!iter.hasNext()) {
-                    if(cmp.compare(e, temp) < 0) {
-                        tmp.add(e);
-                        tmp.add(temp);
-                        break;
-                    }
-                }
-                continue;
+                if (segs > n) return tmp;
             }
 
-            tmp.add(e);
-            e = temp;
-            temp = iter.next();
-            if(!iter.hasNext()) {
-                if(cmp.compare(e, temp) < 0) {
-                    tmp.add(e);
-                    tmp.add(temp);
-                    break;
-                }
-                if(segs + 1 == n && cmp.compare(e,temp) > 0) {
-                    segs++;
-                    tmp = new ArrayList<>();
-                    tmp.add(temp);
-                    break;
-                }
-                tmp.add(e);
-                break;
-            }
+            if (segs == n) tmp.add(e);
+
+            temp = e;
         }
 
-        if (segs < n) return List.of();
         return tmp;
     }
 
@@ -128,8 +79,7 @@ public class AlgorithmUtils {
     public static <K,V,C extends Collection<V>> void forEachIf( Map<K,C> m, BiPredicate<K,C> p, BiConsumer<K,C> action) {
         m.forEach((key, c) -> {
             if(p.test(key, c))
-                for(V v : m.get(key))
-                    action.accept(key, c);
+                action.accept(key, c);
         });
     }
 }

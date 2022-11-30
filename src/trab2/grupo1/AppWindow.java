@@ -1,9 +1,9 @@
 package trab2.grupo1;
 
 import java.awt.*;
+import javax.swing.*;
 import java.awt.event.*;
 import java.io.IOException;
-import javax.swing.*;
 
 public class AppWindow extends JFrame implements ActionListener {
 

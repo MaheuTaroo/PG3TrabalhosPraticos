@@ -10,10 +10,6 @@ public class AppWindow extends JFrame {
     private final JTextField name, surname;
     private final JTextArea list;
     private final Families<Collection<String>> families;
-    public static void applyBorder(javax.swing.text.JTextComponent jtc, String title) {
-        jtc.setBorder(BorderFactory.createTitledBorder(title));
-    }
-
     JFileChooser jfc = new JFileChooser(".");
 
     public AppWindow() {
@@ -32,6 +28,7 @@ public class AppWindow extends JFrame {
         applyBorder(list, "List");
 
         JScrollPane jsp = new JScrollPane(list);
+        jsp.setVerticalScrollBar(jsp.createVerticalScrollBar());
 
         JButton add = new JButton("Add");
         add.addActionListener(actionListener -> {
@@ -43,18 +40,21 @@ public class AppWindow extends JFrame {
         JMenu file = new JMenu("File"), info = new JMenu("Info"), save = new JMenu("Save");
         JMenuItem[] fileItems = { new JMenuItem("Load"), save,
                                   new JMenuItem("Clear"), new JMenuItem("Exit") },
-                saveItems = { new JMenuItem("Names"), new JMenuItem("Families") },
-                infoItems = { new JMenuItem("Names"), new JMenuItem("Surnames"),
-                              new JMenuItem("Families"), new JMenuItem("Greater families"),
-                              new JMenuItem("Family"), new JMenuItem("Families") };
+                    saveItems = { new JMenuItem("Names"), new JMenuItem("Families") },
+                    infoItems = { new JMenuItem("Names"), new JMenuItem("Surnames"),
+                                  new JMenuItem("Greater families"), new JMenuItem("Family"),
+                                  new JMenuItem("Families") };
 
 
 
-        ActionListener[] itemListeners = { this::load, null, this::clear, this::exit};
+        ActionListener[] fileItemListeners = { this::load, null, this::clear, this::exit},
+                         saveItemListeners = {this::saveNames, this::saveFamilies},
+                         infoItemListeners = { /* TODO - implementar listeners */ };
 
         for (int i = 0; i < fileItems.length; i++) {
             file.add(fileItems[i]);
-             if (itemListeners[i] != null) fileItems[i].addActionListener(itemListeners[i]);
+            if (i == 1) file.addSeparator();
+            if (fileItemListeners[i] != null) fileItems[i].addActionListener(fileItemListeners[i]);
         }
 
         for(JMenuItem jmi : saveItems)
@@ -63,6 +63,9 @@ public class AppWindow extends JFrame {
         for (JMenuItem jmi : infoItems)
             info.add(jmi);
 
+        menu.add(file);
+        menu.add(info);
+
         setJMenuBar(menu);
 
         JPanel pList = new JPanel(), pName = new JPanel();
@@ -70,6 +73,13 @@ public class AppWindow extends JFrame {
 
         // TODO - acabar de modelar a janela
     }
+
+    public static void applyBorder(javax.swing.text.JTextComponent jtc, String title) {
+        jtc.setBorder(BorderFactory.createTitledBorder(title));
+    }
+
+
+    // Eventos de fileItems
 
     private void load(ActionEvent ae) {
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -87,5 +97,17 @@ public class AppWindow extends JFrame {
     private void exit(ActionEvent actionEvent) {
         dispose();
         System.exit(0);
+    }
+
+
+    // Eventos de saveItems
+
+    private void saveNames(ActionEvent actionEvent) {
+        if (families.getSurnames().size() == 0) JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
+        else new SurnameChooserWindow(families, jfc);
+    }
+
+    private void saveFamilies(ActionEvent actionEvent) {
+        // TODO - implementar evento
     }
 }

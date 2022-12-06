@@ -17,6 +17,8 @@ public class AppWindow extends JFrame {
         families = new Families<>(TreeMap::new, ArrayList::new);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+
+
         name = new JTextField();
         applyBorder(name, "Name");
 
@@ -72,6 +74,8 @@ public class AppWindow extends JFrame {
         pList.setLayout(new GridLayout(2, 1));
 
         // TODO - acabar de modelar a janela
+
+        setVisible(true);
     }
 
     public static void applyBorder(javax.swing.text.JTextComponent jtc, String title) {
@@ -96,7 +100,8 @@ public class AppWindow extends JFrame {
 
     private void exit(ActionEvent actionEvent) {
         dispose();
-        System.exit(0);
+        dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        //System.exit(0);
     }
 
 

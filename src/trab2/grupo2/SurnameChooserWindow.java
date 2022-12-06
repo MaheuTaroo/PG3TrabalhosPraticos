@@ -1,7 +1,8 @@
 package trab2.grupo2;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
@@ -11,6 +12,7 @@ public class SurnameChooserWindow extends JFrame {
     private final JFileChooser fileChooser;
 
     public SurnameChooserWindow(Families<Collection<String>> f, JFileChooser jfc) {
+        super("Choose a family to save");
         families = f;
         fileChooser = jfc;
 
@@ -38,7 +40,7 @@ public class SurnameChooserWindow extends JFrame {
                         fw.write("\n\t" + name);
                     }
 
-                    // TODO - acabar evento
+                    close(ae);
                 }
                 catch (IOException ie) {
                     JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + ie.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -47,6 +49,25 @@ public class SurnameChooserWindow extends JFrame {
             }
         });
 
-        // TODO - adicionar evento de fecho
+        cancel.addActionListener(this::close);
+
+        Container c = getContentPane();
+        c.add(label, BorderLayout.NORTH);
+        c.add(combo, BorderLayout.CENTER);
+
+        JPanel p = new JPanel();
+        p.setLayout(new GridLayout(1, 2));
+        p.add(save);
+        p.add(cancel);
+
+        c.add(p, BorderLayout.SOUTH);
+
+        // TODO - corrigir modelo desta janela
+
+        setVisible(true);
+    }
+
+    private void close(ActionEvent ae) {
+        dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 }

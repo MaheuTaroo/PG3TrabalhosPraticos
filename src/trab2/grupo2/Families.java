@@ -15,7 +15,7 @@ public class Families<C extends Collection<String>> {
     }
 
     public static String surname(String name) {
-        return name.substring(name.lastIndexOf(' '));
+        return name.substring(name.lastIndexOf(' ') + 1);
     }
 
     public Set<String> getSurnames() {
@@ -28,13 +28,13 @@ public class Families<C extends Collection<String>> {
 
     public void addNames(File names) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(names))){
-            AlgorithmUtils.addAll(br , families, Function.identity(), Families::surname, supplier);
+            AlgorithmUtils.addAll(br, families, Function.identity(), Families::surname, supplier);
         }
     }
 
     public void addName(String name) {
         try (BufferedReader br = new BufferedReader(new StringReader(name))) {
-            AlgorithmUtils.addAll(br , families, Function.identity(), Families::surname, supplier);
+            AlgorithmUtils.addAll(br, families, Function.identity(), Families::surname, supplier);
         }
         catch (IOException ignored) {
 

@@ -18,7 +18,7 @@ public class SurnameChooserWindow extends JFrame {
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        setSize(400, 300);
+        setSize(300, 200);
         setResizable(false);
 
         JLabel label = new JLabel("Choose the family to save");

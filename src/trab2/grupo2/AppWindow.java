@@ -17,6 +17,8 @@ public class AppWindow extends JFrame {
         families = new Families<>(TreeMap::new, ArrayList::new);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        setSize(600, 400);
+        setResizable(false);
 
 
         name = new JTextField();
@@ -39,43 +41,56 @@ public class AppWindow extends JFrame {
         });
 
         JMenuBar menu = new JMenuBar();
-        JMenu file = new JMenu("File"), info = new JMenu("Info"), save = new JMenu("Save");
+
+        JMenuItem[] saveItems = {new JMenuItem("Names"), new JMenuItem("Families")};
+
+        ActionListener[] saveItemListeners = {this::saveNames, this::saveFamilies};
+
+        JMenu save = addActionListeners(saveItems, saveItemListeners, "Save");
+
         JMenuItem[] fileItems = { new JMenuItem("Load"), save,
                                   new JMenuItem("Clear"), new JMenuItem("Exit") },
-                    saveItems = { new JMenuItem("Names"), new JMenuItem("Families") },
                     infoItems = { new JMenuItem("Names"), new JMenuItem("Surnames"),
                                   new JMenuItem("Greater families"), new JMenuItem("Family"),
                                   new JMenuItem("Families") };
 
-
-
         ActionListener[] fileItemListeners = { this::load, null, this::clear, this::exit},
-                         saveItemListeners = {this::saveNames, this::saveFamilies},
                          infoItemListeners = { /* TODO - implementar listeners */ };
 
-        for (int i = 0; i < fileItems.length; i++) {
-            file.add(fileItems[i]);
-            if (i == 1) file.addSeparator();
-            if (fileItemListeners[i] != null) fileItems[i].addActionListener(fileItemListeners[i]);
-        }
 
-        for(JMenuItem jmi : saveItems)
-            save.add(jmi);
-
-        for (JMenuItem jmi : infoItems)
-            info.add(jmi);
+        JMenu file = addActionListeners(fileItems, fileItemListeners, "File"),
+              info = addActionListeners(infoItems, infoItemListeners, "Info");
 
         menu.add(file);
         menu.add(info);
 
         setJMenuBar(menu);
 
-        JPanel pList = new JPanel(), pName = new JPanel();
-        pList.setLayout(new GridLayout(2, 1));
+        JPanel pName = new JPanel();
+
+        pName.setLayout(new GridLayout(1, 3));
+        pName.add(name);
+        pName.add(surname);
+        pName.add(add);
+
+        Container c = getContentPane();
+
+        c.add(list, BorderLayout.CENTER);
+        c.add(pName, BorderLayout.SOUTH);
 
         // TODO - acabar de modelar a janela
 
         setVisible(true);
+    }
+
+    private static JMenu addActionListeners(JMenuItem[] items, ActionListener[] listeners, String text) {
+        JMenu menu = new JMenu(text);
+        for (int i = 0; i < items.length; i++) {
+            menu.add(items[i]);
+            if (listeners[i] != null) items[i].addActionListener(listeners[i]);
+        }
+
+        return menu;
     }
 
     public static void applyBorder(javax.swing.text.JTextComponent jtc, String title) {

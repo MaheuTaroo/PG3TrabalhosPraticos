@@ -60,8 +60,6 @@ public class Families<C extends Collection<String>> {
 
     public Set<String> getGreaterFamilies() {
         Set<String> res = new TreeSet<>();
-        // (e, f) -> e.getValue().size() - f.getValue().size()
-        // (e, f) -> Integer.compare(e.getValue().size(), f.getValue().size())
         Map.Entry<String, C> temp = Collections.max(families.entrySet(), Comparator.comparingInt(e -> e.getValue().size()));
 
         res.add(temp.getKey());

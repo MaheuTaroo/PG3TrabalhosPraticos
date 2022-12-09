@@ -60,11 +60,11 @@ public class AlgorithmUtils {
             V value = getValue.apply(s);
             K key = getKey.apply(value);
             C c = m.get(key);
-            if(c == null) {
+            if (c == null) {
                 c = supC.get();
                 m.put(key, c);
             }
-            c.add(value);
+            if (!c.contains(value)) c.add(value);
         }
     }
 

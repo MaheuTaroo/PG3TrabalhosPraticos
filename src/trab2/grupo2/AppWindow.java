@@ -3,13 +3,14 @@ package trab2.grupo2;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 public class AppWindow extends JFrame {
     private final JTextField name, surname;
     private final JTextArea list;
     private final Families<Collection<String>> families;
+    private final TreeMap<String, Collection<String>> map = new TreeMap<>();
     JFileChooser jfc = new JFileChooser(".");
 
     public AppWindow() {
@@ -35,10 +36,7 @@ public class AppWindow extends JFrame {
         jsp.setVerticalScrollBar(jsp.createVerticalScrollBar());
 
         JButton add = new JButton("Add");
-        add.addActionListener(actionListener -> {
-            // TODO - acabar click event
-            families.addName(name.getText().trim() + " " + surname.getText().trim());
-        });
+        add.addActionListener(ae -> families.addName(name.getText().trim() + " " + surname.getText().trim()));
 
         JMenuBar menu = new JMenuBar();
 
@@ -55,7 +53,8 @@ public class AppWindow extends JFrame {
                                   new JMenuItem("Families") };
 
         ActionListener[] fileItemListeners = { this::load, null, this::clear, this::exit},
-                         infoItemListeners = { /* TODO - implementar listeners */ };
+                         infoItemListeners = { this::fetchNames, this::fetchSurnames, this::fetchGreaterFamilies, null, null };
+        // TODO - implementar listeners
 
 
         JMenu file = addActionListeners(fileItems, fileItemListeners, "File"),
@@ -78,8 +77,6 @@ public class AppWindow extends JFrame {
         c.add(list, BorderLayout.CENTER);
         c.add(pName, BorderLayout.SOUTH);
 
-        // TODO - acabar de modelar a janela
-
         setVisible(true);
     }
 
@@ -97,13 +94,22 @@ public class AppWindow extends JFrame {
         jtc.setBorder(BorderFactory.createTitledBorder(title));
     }
 
+    private boolean checkForFamilies() {
+        if (families.getSurnames().size() == 0) JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
+
+        return families.getSurnames().size() != 0;
+    }
+
 
     // Eventos de fileItems
 
     private void load(ActionEvent ae) {
-        if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File f = jfc.getSelectedFile();
-            // TODO - acabar evento
+        try {
+            if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+                families.addNames(jfc.getSelectedFile());
+        }
+        catch (IOException io) {
+            JOptionPane.showMessageDialog(null, "There was an error loading the given family file: " + io.getLocalizedMessage());
         }
     }
 
@@ -116,18 +122,60 @@ public class AppWindow extends JFrame {
     private void exit(ActionEvent actionEvent) {
         dispose();
         dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        //System.exit(0);
     }
 
 
     // Eventos de saveItems
 
     private void saveNames(ActionEvent actionEvent) {
-        if (families.getSurnames().size() == 0) JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
-        else new SurnameChooserWindow(families, jfc);
+        if (checkForFamilies()) new SaveFamilyDialog(this, families, jfc);
     }
 
     private void saveFamilies(ActionEvent actionEvent) {
-        // TODO - implementar evento
+        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try (FileWriter fw = new FileWriter(jfc.getSelectedFile())) {
+                for (String surname: families.getSurnames()) {
+                    for (String name : families.getNames(surname)) {
+                        fw.write("\n\t" + name);
+                    }
+                }
+
+            }
+            catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+
+    // Eventos de infoItems
+
+    private void fetchSurnames(ActionEvent actionEvent) {
+        list.setText("");
+        for (String surname : families.getSurnames()) {
+            list.append((list.getText().isEmpty() ? "" : "\n") + surname);
+        }
+    }
+
+    private void fetchNames(ActionEvent actionEvent) {
+        if (checkForFamilies()) {
+            list.setText("");
+            for (String surname : families.getSurnames()) {
+                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
+                for (String name : families.getNames(surname))
+                    list.append("\n" + name);
+            }
+        }
+    }
+
+    private void fetchGreaterFamilies(ActionEvent actionEvent) {
+        list.setText("");
+
+        for (String surname: families.getGreaterFamilies()) {
+            list.append((list.getText().isEmpty() ? "" : "\n") + name);
+
+            for (String name: families.getNames(surname))
+                list.append("\n\t" + name);
+        }
     }
 }

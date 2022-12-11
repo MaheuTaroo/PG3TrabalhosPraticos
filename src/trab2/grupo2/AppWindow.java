@@ -1,6 +1,7 @@
 package trab2.grupo2;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -9,18 +10,18 @@ import java.util.*;
 public class AppWindow extends JFrame {
     private final JTextField name, surname;
     private final JTextArea list;
-    private final Families<Collection<String>> families;
-    private final TreeMap<String, Collection<String>> map = new TreeMap<>();
+    private Families<Collection<String>> families;
     JFileChooser jfc = new JFileChooser(".");
 
     public AppWindow() {
         super("Families");
-        families = new Families<>(TreeMap::new, ArrayList::new);
+        families = new Families<>(LinkedHashMap::new, TreeSet::new);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         setSize(600, 400);
         setResizable(false);
 
+        jfc.setAcceptAllFileFilterUsed(false);
 
         name = new JTextField();
         applyBorder(name, "Name");
@@ -34,7 +35,7 @@ public class AppWindow extends JFrame {
 
         JScrollPane jsp = new JScrollPane(list);
         jsp.setVerticalScrollBar(jsp.createVerticalScrollBar());
-        jsp.setVerticalScrollBar(jsp.createHorizontalScrollBar());
+        jsp.setHorizontalScrollBar(jsp.createHorizontalScrollBar());
 
         JButton add = new JButton("Add");
         add.addActionListener(ae -> {
@@ -46,9 +47,9 @@ public class AppWindow extends JFrame {
 
         JMenuBar menu = new JMenuBar();
 
-        JMenuItem[] saveItems = {new JMenuItem("Names"), new JMenuItem("Families")};
+        JMenuItem[] saveItems = { new JMenuItem("Names"), new JMenuItem("Surnames"), new JMenuItem("Family"), new JMenuItem("Families") };
 
-        ActionListener[] saveItemListeners = {this::saveNames, this::saveFamilies};
+        ActionListener[] saveItemListeners = { this::saveNames, this::saveSurnames, this::saveFamily, this::saveFamilies };
 
         JMenu save = addActionListeners(saveItems, saveItemListeners, "Save");
 
@@ -78,7 +79,7 @@ public class AppWindow extends JFrame {
 
         Container c = getContentPane();
 
-        c.add(list, BorderLayout.CENTER);
+        c.add(jsp, BorderLayout.CENTER);
         c.add(pName, BorderLayout.SOUTH);
 
         setVisible(true);
@@ -100,7 +101,7 @@ public class AppWindow extends JFrame {
 
     private boolean checkForFamilies() {
         if (families.getSurnames().size() == 0)
-            JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No families have been stored yet", "Warning", JOptionPane.WARNING_MESSAGE);
 
         return families.getSurnames().size() != 0;
     }
@@ -109,6 +110,8 @@ public class AppWindow extends JFrame {
     // Eventos de fileItems
 
     private void load(ActionEvent ae) {
+        FileNameExtensionFilter namesFilter = new FileNameExtensionFilter("Family names file", "nam");
+        jfc.addChoosableFileFilter(namesFilter);
         try {
             if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
                 families.addNames(jfc.getSelectedFile());
@@ -116,12 +119,14 @@ public class AppWindow extends JFrame {
         catch (IOException io) {
             JOptionPane.showMessageDialog(null, "There was an error loading the given family file: " + io.getLocalizedMessage());
         }
+        jfc.removeChoosableFileFilter(namesFilter);
     }
 
     private void clear(ActionEvent actionEvent) {
         name.setText("");
         surname.setText("");
         list.setText("");
+        families = new Families<>(LinkedHashMap::new, TreeSet::new);
     }
 
     private void exit(ActionEvent actionEvent) {
@@ -133,24 +138,60 @@ public class AppWindow extends JFrame {
     // Eventos de saveItems
 
     private void saveNames(ActionEvent actionEvent) {
-        if (checkForFamilies()) new SaveFamilyDialog(this, families, jfc);
-    }
-
-    private void saveFamilies(ActionEvent actionEvent) {
         if (checkForFamilies()) {
+            FileNameExtensionFilter namesFilter = new FileNameExtensionFilter("Family names file", "nam");
+            jfc.addChoosableFileFilter(namesFilter);
             if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try (FileWriter fw = new FileWriter(jfc.getSelectedFile())) {
-                    for (String surname: families.getSurnames()) {
-                        for (String name : families.getNames(surname)) {
-                            fw.write("\n\t" + name);
-                        }
-                    }
-
+                String filename = jfc.getSelectedFile().getAbsolutePath();
+                if (!filename.endsWith(".nam")) filename += ".nam";
+                try (PrintWriter pw = new PrintWriter(filename)) {
+                    families.forEachName(pw::println);
                 }
                 catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+            jfc.removeChoosableFileFilter(namesFilter);
+        }
+    }
+
+    private void saveSurnames(ActionEvent actionEvent) {
+        if (checkForFamilies()) {
+            FileNameExtensionFilter namesFilter = new FileNameExtensionFilter("Family names file", "snam");
+            jfc.addChoosableFileFilter(namesFilter);
+            if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                String filename = jfc.getSelectedFile().getAbsolutePath();
+                if (!filename.endsWith(".snam")) filename += ".snam";
+                try (PrintWriter pw = new PrintWriter(filename)) {
+                    families.forEach((surname, name) -> pw.println(surname));
+                }
+                catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "An error occurred while saving the surnames: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+            jfc.removeChoosableFileFilter(namesFilter);
+        }
+    }
+
+    private void saveFamily(ActionEvent actionEvent) {
+        if (checkForFamilies()) new SaveFamilyDialog(this, families, jfc);
+    }
+
+    private void saveFamilies(ActionEvent actionEvent) {
+        if (checkForFamilies()) {
+            FileNameExtensionFilter familiesFilter = new FileNameExtensionFilter("Families file", "fam");
+            jfc.addChoosableFileFilter(familiesFilter);
+            if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                String filename = jfc.getSelectedFile().getAbsolutePath();
+                if (!filename.endsWith(".fam")) filename += ".fam";
+                try (PrintWriter pw = new PrintWriter(filename)) {
+                    families.printFamilies(pw, Collections.emptySet());
+                }
+                catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "An error occurred while saving the family: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+            jfc.removeChoosableFileFilter(familiesFilter);
         }
     }
 
@@ -161,39 +202,34 @@ public class AppWindow extends JFrame {
         if (checkForFamilies()) {
             list.setText("");
 
-            // Array passada como referência para obter o valor escolhido
-            String[] returningFamily = new String[] { null };
-
-            new FamilyChooserDialog(this, families, returningFamily);
-            if (returningFamily[0] != null) {
-                for (String name : families.getNames(returningFamily[0])) {
-                    list.append((list.getText().isEmpty() ? "" : "\n") + name);
-                }
-            }
+            families.forEachName(s -> list.append((list.getText().isEmpty() ? "" : "\n") + s));
         }
     }
 
     private void fetchSurnames(ActionEvent actionEvent) {
-        // TODO - ordenar apelidos por ordem de entrada
+        if (checkForFamilies()) {
+            list.setText("");
 
-        list.setText("");
-        for (String surname : families.getSurnames()) {
-            list.append((list.getText().isEmpty() ? "" : "\n") + surname);
+            for (String surname : families.getSurnames()) {
+                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
+            }
         }
     }
 
     private void fetchGreaterFamilies(ActionEvent actionEvent) {
-        list.setText("");
+        if (checkForFamilies()) {
+            list.setText("");
 
-        for (String surname: families.getGreaterFamilies()) {
-            list.append((list.getText().isEmpty() ? "" : "\n") + name);
+            for (String surname: families.getGreaterFamilies()) {
+                list.append((list.getText().isEmpty() ? "" : "\n") + name);
 
-            for (String name: families.getNames(surname))
-                list.append("\n      " + name);
+                for (String name: families.getNames(surname))
+                    list.append("\n      " + name);
+            }
         }
     }
 
-    private void fetchFamily(ActionEvent ae) {
+    private void fetchFamily(ActionEvent actionEvent) {
         if (checkForFamilies()) {
             list.setText("");
 
@@ -205,7 +241,7 @@ public class AppWindow extends JFrame {
                 list.setText(returningFamily[0]);
 
                 for (String name : families.getNames(returningFamily[0])) {
-                    list.append("\n      " + name);
+                    list.append("\n\t" + name);
                 }
             }
         }
@@ -214,16 +250,11 @@ public class AppWindow extends JFrame {
     private void fetchFamilies(ActionEvent actionEvent) {
         if (checkForFamilies()) {
             list.setText("");
-            for (String surname : families.getSurnames()) {
-                if (!list.getText().isEmpty()) list.append("\n");
 
-                ArrayList<String> names = new ArrayList<>(families.getNames(surname));
-                names.sort(String::compareToIgnoreCase);
+            StringWriter sw = new StringWriter();
+            families.printFamilies(new PrintWriter(sw), Collections.emptySet());
 
-                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
-                for (String name : names)
-                    list.append("\n      " + name);
-            }
+            list.setText(sw.toString());
         }
     }
 }

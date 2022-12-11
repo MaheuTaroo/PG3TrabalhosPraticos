@@ -3,7 +3,6 @@ package trab2.grupo2;
 import java.io.*;
 import java.util.*;
 import java.util.function.*;
-import trab2.grupo2.AlgorithmUtils;
 
 public class Families<C extends Collection<String>> {
     private final Map<String, C> families;
@@ -28,7 +27,7 @@ public class Families<C extends Collection<String>> {
 
     public void addNames(File names) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(names))){
-            AlgorithmUtils.addAll(br, families, Function.identity(), Families::surname, supplier);
+            AlgorithmUtils.addAll(br, families, String::trim, Families::surname, supplier);
         }
     }
 

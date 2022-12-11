@@ -1,10 +1,12 @@
 package trab2.grupo2;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 
 public class SaveFamilyDialog extends JDialog {
@@ -31,20 +33,23 @@ public class SaveFamilyDialog extends JDialog {
         JButton save = new JButton("Save"), cancel = new JButton("Cancel");
 
         save.addActionListener(ae -> {
+            FileNameExtensionFilter familiesFilter = new FileNameExtensionFilter("Families file", "fam");
+            jfc.addChoosableFileFilter(familiesFilter);
             if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try (FileWriter fw = new FileWriter(jfc.getSelectedFile())) {
+                String filename = jfc.getSelectedFile().getAbsolutePath();
+                if (!filename.endsWith(".fam")) filename += ".fam";
+                try (PrintWriter pw = new PrintWriter(filename)) {
                     StringBuilder text = new StringBuilder();
                     for (String name : families.getNames((String)surnameCombo.getSelectedItem())) {
-                        text.append((text.length() == 0) ? "" : "\n").append(name);
+                        pw.println(name);
                     }
-
-                    fw.write(text.toString());
                     close(ae);
                 }
-                catch (IOException ie) {
-                    JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + ie.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+            jfc.removeChoosableFileFilter(familiesFilter);
         });
 
         cancel.addActionListener(this::close);

@@ -34,9 +34,15 @@ public class AppWindow extends JFrame {
 
         JScrollPane jsp = new JScrollPane(list);
         jsp.setVerticalScrollBar(jsp.createVerticalScrollBar());
+        jsp.setVerticalScrollBar(jsp.createHorizontalScrollBar());
 
         JButton add = new JButton("Add");
-        add.addActionListener(ae -> families.addName(name.getText().trim() + " " + surname.getText().trim()));
+        add.addActionListener(ae -> {
+            if (name.getText().isEmpty() || surname.getText().isEmpty())
+                JOptionPane.showMessageDialog(null, "There is not enough data to add a family member. Please check the name and/or surname boxes and try again", "Error", JOptionPane.ERROR_MESSAGE);
+            else
+                families.addName(name.getText().trim() + " " + surname.getText().trim());
+        });
 
         JMenuBar menu = new JMenuBar();
 
@@ -53,9 +59,7 @@ public class AppWindow extends JFrame {
                                   new JMenuItem("Families") };
 
         ActionListener[] fileItemListeners = { this::load, null, this::clear, this::exit},
-                         infoItemListeners = { this::fetchNames, this::fetchSurnames, this::fetchGreaterFamilies, null, null };
-        // TODO - implementar listeners
-
+                infoItemListeners = { this::fetchNames, this::fetchSurnames, this::fetchGreaterFamilies, this::fetchFamily, this::fetchFamilies };
 
         JMenu file = addActionListeners(fileItems, fileItemListeners, "File"),
               info = addActionListeners(infoItems, infoItemListeners, "Info");
@@ -95,7 +99,8 @@ public class AppWindow extends JFrame {
     }
 
     private boolean checkForFamilies() {
-        if (families.getSurnames().size() == 0) JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
+        if (families.getSurnames().size() == 0)
+            JOptionPane.showMessageDialog(null, "There are no stored families to save", "Warning", JOptionPane.WARNING_MESSAGE);
 
         return families.getSurnames().size() != 0;
     }
@@ -132,17 +137,19 @@ public class AppWindow extends JFrame {
     }
 
     private void saveFamilies(ActionEvent actionEvent) {
-        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (FileWriter fw = new FileWriter(jfc.getSelectedFile())) {
-                for (String surname: families.getSurnames()) {
-                    for (String name : families.getNames(surname)) {
-                        fw.write("\n\t" + name);
+        if (checkForFamilies()) {
+            if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try (FileWriter fw = new FileWriter(jfc.getSelectedFile())) {
+                    for (String surname: families.getSurnames()) {
+                        for (String name : families.getNames(surname)) {
+                            fw.write("\n\t" + name);
+                        }
                     }
-                }
 
-            }
-            catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "An error occurred while saving the names: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
@@ -150,21 +157,28 @@ public class AppWindow extends JFrame {
 
     // Eventos de infoItems
 
-    private void fetchSurnames(ActionEvent actionEvent) {
-        list.setText("");
-        for (String surname : families.getSurnames()) {
-            list.append((list.getText().isEmpty() ? "" : "\n") + surname);
-        }
-    }
-
     private void fetchNames(ActionEvent actionEvent) {
         if (checkForFamilies()) {
             list.setText("");
-            for (String surname : families.getSurnames()) {
-                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
-                for (String name : families.getNames(surname))
-                    list.append("\n" + name);
+
+            // Array passada como referência para obter o valor escolhido
+            String[] returningFamily = new String[] { null };
+
+            new FamilyChooserDialog(this, families, returningFamily);
+            if (returningFamily[0] != null) {
+                for (String name : families.getNames(returningFamily[0])) {
+                    list.append((list.getText().isEmpty() ? "" : "\n") + name);
+                }
             }
+        }
+    }
+
+    private void fetchSurnames(ActionEvent actionEvent) {
+        // TODO - ordenar apelidos por ordem de entrada
+
+        list.setText("");
+        for (String surname : families.getSurnames()) {
+            list.append((list.getText().isEmpty() ? "" : "\n") + surname);
         }
     }
 
@@ -175,7 +189,41 @@ public class AppWindow extends JFrame {
             list.append((list.getText().isEmpty() ? "" : "\n") + name);
 
             for (String name: families.getNames(surname))
-                list.append("\n\t" + name);
+                list.append("\n      " + name);
+        }
+    }
+
+    private void fetchFamily(ActionEvent ae) {
+        if (checkForFamilies()) {
+            list.setText("");
+
+            // Array passada como referência para obter o valor escolhido
+            String[] returningFamily = new String[] { null };
+
+            new FamilyChooserDialog(this, families, returningFamily);
+            if (returningFamily[0] != null) {
+                list.setText(returningFamily[0]);
+
+                for (String name : families.getNames(returningFamily[0])) {
+                    list.append("\n      " + name);
+                }
+            }
+        }
+    }
+
+    private void fetchFamilies(ActionEvent actionEvent) {
+        if (checkForFamilies()) {
+            list.setText("");
+            for (String surname : families.getSurnames()) {
+                if (!list.getText().isEmpty()) list.append("\n");
+
+                ArrayList<String> names = new ArrayList<>(families.getNames(surname));
+                names.sort(String::compareToIgnoreCase);
+
+                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
+                for (String name : names)
+                    list.append("\n      " + name);
+            }
         }
     }
 }

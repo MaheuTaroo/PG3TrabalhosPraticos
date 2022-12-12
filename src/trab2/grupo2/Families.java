@@ -50,7 +50,7 @@ public class Families<C extends Collection<String>> {
 
     public void printFamilies(PrintWriter out, Set<String> except) {
         AlgorithmUtils.forEachIf(families, (s, t) -> !except.contains(s), (s, t) -> {
-            out.println(s + ": " + getNames(s).size());
+            out.println(s + ": " + t.size());
             for (String name : t) {
                 out.println("\t" + name);
             }

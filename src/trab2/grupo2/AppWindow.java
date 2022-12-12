@@ -221,7 +221,7 @@ public class AppWindow extends JFrame {
             list.setText("");
 
             for (String surname: families.getGreaterFamilies()) {
-                list.append((list.getText().isEmpty() ? "" : "\n") + name);
+                list.append((list.getText().isEmpty() ? "" : "\n") + surname);
 
                 for (String name: families.getNames(surname))
                     list.append("\n      " + name);

@@ -4,6 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 
 import trab3.bubbles.pieces.Bubble;
 import trab3.bubbles.strategies.Strategy;
@@ -41,12 +42,24 @@ public class BubbleGameFrame extends JFrame implements GameListener {
 		setIconImage( new ImageIcon("src/trab3/bubbles.png").getImage());
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		Container cp = this.getContentPane();
-
 		game = g;
 		game.addListener(this );
 		game.setStrategy( s );
 
-		cp.add( board = createBoard( g ) );
+		cp.add( board = createBoard( g ), BorderLayout.CENTER);
+
+		JButton startOrStop = new JButton("start");
+		startOrStop.addActionListener(ae -> {
+			if(Objects.equals(startOrStop.getText(), "start")) {
+				game.start();
+				startOrStop.setText("stop");
+			} else {
+				game.stop();
+				startOrStop.setText("start");
+			}
+		});
+
+		cp.add(startOrStop, BorderLayout.SOUTH);
 
 		JMenuBar mb= new JMenuBar();
 		mb.add( createMenu("Game", menuGameItens) );

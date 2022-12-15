@@ -2,6 +2,7 @@ package trab3.bubbles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.function.IntUnaryOperator;
 
@@ -81,8 +82,6 @@ public class BubbleGame implements Game, Board {
 		Bubble b = getBubble(line, column);
 		if ( b.isSelected() ) {
 			int n = strategy.removeSelected( this );
-			// TODO - actualizar o número de bubbles e
-			//        os pontos tendo em conta a cor e o n
 			bubbles -= n;
 			points += b.getColor() * Math.pow(2, n - 2);
 			listener.forEach(li-> li.scoreChange( getScore() ));
@@ -104,7 +103,11 @@ public class BubbleGame implements Game, Board {
 	public void stop() {
 		if ( timeStop < timeStart ) {
 			timeStop = System.currentTimeMillis();
-			// TODO - actualizar os pontos tendo em conta o tempo
+			int time = getTime();
+			if(bubbles == 0)
+				points += time;
+			else
+				points += time/bubbles;
 			listener.forEach(li-> li.gameStop( getScore() ));
 		}
 	}
@@ -132,14 +135,22 @@ public class BubbleGame implements Game, Board {
 	 * @return número de bolhas por cor
 	 */
 	private int[] calculateNumberPerColor(int[] percentages, int totalOfBubbles, int minimum) {
-		// TODO - calcular o número de peças. Os dois primeiros (While e Black) tem que ter pelo menos minimum.
-		// este código é para substituir só funciona para esta dimensão de tabuleiro
-		return new int[] { 2, 2, 35, 35, 35, 20, 20, 19 };
+		int value;
+
+		int [] colors = new int[8];
+		for(int i = 0; i < percentages.length; i++) {
+			value = percentages[i]*totalOfBubbles/100;
+			if(i < 2) {
+				value = value > 2 ? value : minimum;
+			}
+			colors[i] = value;
+		}
+		return colors;
 	}
 
 	/**
 	 * TODO - Explicar o algoritmo e comentar o código
-	 * @param numberOfBubbles
+	 * @param numberOfBubbles número total de peças
 	 * @param numbersColor número de peças para cada cor
 	 * @param positions array que contém todas as posiçoes das bolhas
 	 * @return

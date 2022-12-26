@@ -4,7 +4,8 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Objects;
+import java.io.FileReader;
+import java.io.IOException;
 
 import trab3.bubbles.pieces.Bubble;
 import trab3.bubbles.strategies.Strategy;
@@ -14,43 +15,59 @@ public class BubbleGameFrame extends JFrame implements GameListener {
 	public static final int GRID_WIDTH = 35;
 	public static final Color HOLE_COLOR = Color.CYAN;
 	protected final JPanel board;
+	protected final ScorePanel scorePanel;
 	protected Game game;
 	//ScorePanel current, best; //TODO
 	//Players statistics;       //TODO
 	private Timer t = new Timer(1000, this::updateTime);
 
 	private void updateTime(ActionEvent actionEvent) {
-		//TODO
+		scorePanel.setScore(game.getScore());
 	}
 
 	public static class Itens  {
 		private JMenuItem munItem;
 		private ActionListener listener;
-		public Itens(String text, ActionListener al) { this(new JMenuItem(text),al); }
-		public Itens(JMenuItem mi, ActionListener al){ munItem = mi; listener = al;  }
-		public JMenuItem getMenuItem()    { return munItem;  }
-		public ActionListener getAction() { return listener; }
+		public Itens(String text, ActionListener al) {
+			this(new JMenuItem(text), al);
+		}
+		public Itens(JMenuItem mi, ActionListener al) {
+			munItem = mi;
+			listener = al;
+		}
+		public JMenuItem getMenuItem() {
+			return munItem;
+		}
+		public ActionListener getAction() {
+			return listener;
+		}
 	}
 
-	public final  Itens[] menuGameItens = {
-			new Itens("start", e -> game.start()),
-			new Itens("stop", e -> game.stop()),
-			new Itens("exit", e -> System.exit(0))};
+	public final Itens[] menuGameItens = {
+			new Itens("Start", e -> game.start()),
+			new Itens("Stop", e -> game.stop()),
+			new Itens("Exit", e -> System.exit(0)),
+			new Itens("How to play", e -> new HowToPlay()) };
 
 	public BubbleGameFrame(String title, Game g, Strategy s ) {
 		super(title);
-		setIconImage( new ImageIcon("src/trab3/bubbles.png").getImage());
+		setIconImage(new ImageIcon("src/trab3/bubbles.png").getImage());
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		Container cp = this.getContentPane();
 		game = g;
 		game.addListener(this );
 		game.setStrategy( s );
 
-		cp.add( board = createBoard( g ), BorderLayout.CENTER);
+		ScorePanel sp = new ScorePanel();
+
+		scorePanel = new ScorePanel(g.getScore(), g.getTime(), "UNDEFINED");
+
+		cp.add(board = createBoard(g), BorderLayout.CENTER);
 
 		JButton startOrStop = new JButton("start");
 		startOrStop.addActionListener(ae -> {
-			if(Objects.equals(startOrStop.getText(), "start")) {
+			if(startOrStop.getText().equals("start")) {
+
 				game.start();
 				startOrStop.setText("stop");
 			} else {
@@ -88,7 +105,7 @@ public class BubbleGameFrame extends JFrame implements GameListener {
 			b.setPreferredSize(new Dimension(GRID_WIDTH, GRID_WIDTH));
 			b.setBackground(HOLE_COLOR);
 			int pos = i;
-			b.addActionListener( e -> game.select(pos/game.getNumberOfColumns(), pos%game.getNumberOfColumns()) );
+			b.addActionListener(e -> game.select(pos / game.getNumberOfColumns(), pos % game.getNumberOfColumns()));
 			p.add(b);
 		}
 		return p;
@@ -103,12 +120,17 @@ public class BubbleGameFrame extends JFrame implements GameListener {
 	protected JComponent getComponent(int line, int col ) {
 		return (JComponent)board.getComponent(line*game.getNumberOfColumns() + col);
 	}
-	public void selected( Bubble b )
-		{ getComponent(b.getLine(), b.getColumn()).setBackground( Color.GRAY );             }
-	public void unselected( Bubble p )
-		{ getComponent(p.getLine(), p.getColumn()).setBackground(colors[p.getColor()+1]);   }
 
-	// << Implementação da inteface GameListener >>
+	public void selected( Bubble b )
+	{
+		getComponent(b.getLine(), b.getColumn()).setBackground( Color.GRAY );
+	}
+
+	public void unselected( Bubble p ) {
+		getComponent(p.getLine(), p.getColumn()).setBackground(colors[p.getColor()+1]);
+	}
+
+	// << Implementação da interface GameListener >>
 	public void scoreChange(Score s ) {	}
 	public void gameStart(Score s)    {
 		String msg = String.format("Time is %d, start with %d bubbles and %d points", s.time, s.bubbles, s.points);

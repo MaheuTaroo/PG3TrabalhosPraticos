@@ -11,47 +11,62 @@ public class StrategyGravitational implements Strategy {
 	//Numero de bolhas minimas do conjunto
 	private final int minimum;
 
-	public StrategyGravitational(int min) { this.minimum = min; }
-	public StrategyGravitational() { this(2); }
+	public StrategyGravitational(int min) {
+		this.minimum = min;
+	}
+	public StrategyGravitational() {
+		this(2);
+	}
 
-	public int numberOfBubbles() { return bubbles.size(); }
-	public void add(Bubble p)    { bubbles.add(p);        }
+	public int numberOfBubbles() {
+		return bubbles.size();
+	}
+	public void add(Bubble p) {
+		bubbles.add(p);
+	}
 
 	/**
-	 * TODO - explicar o algoritmo e comentar o código
+	 * Seleciona um conjunto de bolhas originado a partir da bolha
+	 * clicada,caso essa seleção possua mais do que o número mínimo
+	 * de bolhas obrigatório.
 	 * @param origin bolha que foi selecionada primeiro
+	 * @return o número de bolhas selecionadas
 	 */
-	public int select( Bubble origin ) {
-		if ( !bubbles.isEmpty() ) unselect();
-		origin.select( );
+	public int select(Bubble origin) {
+		if (!bubbles.isEmpty()) unselect();
+		origin.select();
 		if (numberOfBubbles() < minimum) unselect();
 		return numberOfBubbles();
 	}
 
 	/**
-	 * TODO - explicar o algoritmo e comentar o código
+	 * Remove o conjunto de bolhas selecionado, ordena o tabuleiro
+	 * e aplica as regras da estratégia selecionada
 	 * @param board tabuleiro
+	 * @return o número de bolhas eliminadas
 	 */
 	public int removeSelected( Board board ) {
 		int n = numberOfBubbles();
 		// Ordena nas colunas e para a mesma coluna das
 		// linhas maiores para as menores
-		Comparator<Bubble> cmp = ( b1, b2 ) -> {
-			int res= b1.getColumn()-b2.getColumn();
-			return ( res != 0 ) ? res :b2.getLine()-b1.getLine();
+		Comparator<Bubble> cmp = (b1, b2) -> {
+			int res = b1.getColumn() - b2.getColumn();
+			return res != 0 ? res : b2.getLine() - b1.getLine();
 		};
-		Collections.sort( bubbles, cmp );
-		strategy( board );
+		Collections.sort(bubbles, cmp);
+		strategy(board);
 		return n;
 	}
 
 	/**
-	 * TODO - explicar o algoritmo e comentar o código
+	 * Elimina as bolhas selecionadas e move as bolhas posicionadas
+	 * nas linhas superiores tantas colunas quanto o número total de
+	 * colunas ocupadas pelas bolhas selecionadas
 	 * @param board tabuleiro
 	 */
-	protected void strategy(Board board ) {
+	protected void strategy(Board board) {
 		int n = bubbles.size();
-		for ( Bubble bubbleRemove: bubbles) {
+		for (Bubble bubbleRemove: bubbles) {
 			if (bubbleRemove.isSelected()) {
 				int putLine = bubbleRemove.getLine(), line;
 				for (line = putLine - 1; line >= 0; --line) {
@@ -72,17 +87,18 @@ public class StrategyGravitational implements Strategy {
 	}
 
 	/**
-	 * TODO - explicar o algoritmo e comentar o código
+	 * Liberta a coluna do tabuleiro indicada pelo índice
+	 * fornecido, preenchendo-a com espaços vazios
 	 * @param board tabuleiro
 	 * @param column coluna a libertar
 	 */
 	public void freeColumn(Board board, int column ) {
-		if ( column != board.getNumberOfColumns() - 1 ) {
-			for (int l = 0; l < board.getNumberOfLines() ; ++l) {
+		if (column != board.getNumberOfColumns() - 1) {
+			for (int l = 0; l < board.getNumberOfLines(); ++l) {
 				Bubble hole  = board.getBubble(l, column);
 				int c = column;
-				while ( board.getBubble(l, c+1).moveTo(l , c) ) ++c;
-				hole.moveTo( l, c );
+				while (board.getBubble(l, c + 1).moveTo(l, c)) ++c;
+				hole.moveTo(l, c);
 			}
 		}
 	}
@@ -97,12 +113,14 @@ public class StrategyGravitational implements Strategy {
 		int numberSelected = numberOfBubbles();
 		// Desmarca cada uma das bolhas do conjunto evocando
 		// o método unselect sobre cada bolha
-		bubbles.forEach( Bubble::unselect );
+		bubbles.forEach(Bubble::unselect);
 		// Assinala que o conjunto está vazio
 		bubbles.clear();
 		return numberSelected;
 	}
 
 	// Identificação desta estratégia
-	public String toString() { return "gravitational"; }
+	public String toString() {
+		return "gravitational";
+	}
 }

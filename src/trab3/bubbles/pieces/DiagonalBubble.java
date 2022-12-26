@@ -5,7 +5,6 @@ import trab3.bubbles.Board;
 import java.util.function.Predicate;
 
 public class DiagonalBubble extends SelectableBubble {
-	// TODO - A classe que estende e o código implementado é só para que possa ser instanciado
 	private static final Dir[] DIRECTIONS = { Dir.UP, Dir.DOWN, Dir.LEFT, Dir.RIGHT, Dir.LEFT_UP, Dir.LEFT_DOWN, Dir.RIGHT_UP, Dir.RIGHT_DOWN};
 	private int color;
 	public DiagonalBubble(Board b, int l, int c, int cl) {

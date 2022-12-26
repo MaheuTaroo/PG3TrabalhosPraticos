@@ -1,0 +1,36 @@
+Welcome to Bubbles!
+
+The goal is simple: pop the most bubbles in the smallest amount of time. The smaller the amount of bubbles left over and time spent, the better the score! To clear a set of bubbles, you click once to select them, and once again to pop them.
+In the board you will find four types of bubbles:
+
+BLACK AND WHITE BUBBLES
+	These bubbles clear its column or line, respectively. Pop them to quickly clear the board!
+
+CROSS BUBBLES
+	These bubbles, once selected, can clear every bubble of the same color above it, below it, and to its right or left; that is, once you pop that bubble, you will be able to create a cross-like empty shape in the board, granted the bubbles forming said shape have the same color as the original bubble.
+	These bubbles are represented by the colors red, green and blue.
+
+DIAGONAL BUBBLES
+	These bubbles, once selected, can clear every bubble of the same color surrounding it; that is, every bubble of the same color as the original bubble, as long as it is immediately followed by one of the same color, will be cleared from the board as soon as you pop it.
+	These bubbles are represented by the colors yellow, pink and magenta.
+
+
+
+
+STRATEGIES
+This game has different strategies; these are game modes that you can select to spice up your game a little. You can select the following strategies:
+
+GRAVITATIONAL
+	As soon as you pop a set of bubbles, the remaining bubbles on top of the popped set will fall until they find a set of unpopped bubbles. Be careful, you can ruin you game if you select the wrong set of bubbles!
+
+SHIFTER
+	Just like the previous strategy, the bubbles fall after the set below them is popped. But, as soon as they finish falling, every column gets shifted once to the left! What a twist! Wink, wink!
+
+
+
+
+OTHER RULES
+This section covers some other details about the game, such as functionalities and player statistics.
+
+STATISTICS
+	The game saves a player's best score 

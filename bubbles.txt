@@ -33,4 +33,12 @@ OTHER RULES
 This section covers some other details about the game, such as functionalities and player statistics.
 
 STATISTICS
-	The game saves a player's best score 
+	The game saves a player's statistics, such as:
+		- Games won and total number of games; a game is won if the board has no more than two thirds of the bubble amount
+		- Best and average scores
+		- Best time for the fewer amount of bubbles left and average game time
+		- Minimum, average and maximum amount of unpopped bubbles in the board
+	You can create as many player profiles as you want, but the player name cannot be the same between two players.
+
+	You can also export a player profile's statistics. When you load a profile, and if the game finds one with the same name, it will ask you if you want to override or add the loades statistics into the existing ones. If you don't want the game to do either of those choices, you can press cancel or close the prompt.
+	The gamealso has a top 10 leaderboard. It is ordered by the most points for least unpopped bubbles and least amount of time spent. Reach first place and show everyone who's boss at popping bubbles!

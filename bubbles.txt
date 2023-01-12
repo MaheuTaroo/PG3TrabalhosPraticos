@@ -40,5 +40,5 @@ STATISTICS
 		- Minimum, average and maximum amount of unpopped bubbles in the board
 	You can create as many player profiles as you want, but the player name cannot be the same between two players.
 
-	You can also export a player profile's statistics. When you load a profile, and if the game finds one with the same name, it will ask you if you want to override or add the loades statistics into the existing ones. If you don't want the game to do either of those choices, you can press cancel or close the prompt.
-	The gamealso has a top 10 leaderboard. It is ordered by the most points for least unpopped bubbles and least amount of time spent. Reach first place and show everyone who's boss at popping bubbles!
+	You can also export a player profile's statistics. When you load a profile, and if the game finds one with the same name, it will ask you if you want to override or add the loaded statistics into the existing ones. If you don't want the game to do either of those choices, you can press cancel or close the prompt.
+	The game also has a top 10 leaderboard. It is ordered by the most points for least unpopped bubbles and least amount of time spent. Reach first place and show everyone who's boss at popping bubbles!
